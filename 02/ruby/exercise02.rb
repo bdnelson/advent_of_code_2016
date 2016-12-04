@@ -10,13 +10,22 @@ class Keypad
     @current_number = 5
     @past_number = [5]
     @code = []
+
+    @loc = [0, 2]
+    @keypad = []
+    @keypad << [nil, nil, 1, nil, nil]
+    @keypad << [nil, 2, 3, 4, nil]
+    @keypad << [5, 6, 7, 8, 9]
+    @keypad << [nil, 'A', 'B', 'C', nil]
+    @keypad << [nil, nil, 'D', nil, nil]
   end
 
   def process_line(line)
+    puts line
     line.strip.scan(/\w/).each do |instruction|
-      move(instruction)
+      advanced_move(instruction)
     end
-    @code << @current_number
+    @code << @past_number.last
   end
 
   # Based on a keypad of:
@@ -39,6 +48,30 @@ class Keypad
                       end
 
     @past_number << @current_number
+  end
+
+  # Based on a keypad of
+  #
+  #     1
+  #   2 3 4
+  # 5 6 7 8 9
+  #   A B C
+  #     D
+  #
+  def advanced_move(instruction)
+    @loc = if instruction == "U" and @loc.last > 0
+             @keypad[@loc.last - 1][@loc.first].nil? ? @loc : [@loc.first, @loc.last - 1]
+           elsif instruction == "D" and @loc.last < 4
+             @keypad[@loc.last + 1][@loc.first].nil? ? @loc : [@loc.first, @loc.last + 1]
+           elsif instruction == "L" and @loc.first > 0
+             @keypad[@loc.last][@loc.first - 1].nil? ? @loc : [@loc.first - 1, @loc.last]
+           elsif instruction == "R" and @loc.first < 4
+             @keypad[@loc.last][@loc.first + 1].nil? ? @loc : [@loc.first + 1, @loc.last]
+           else
+             @loc
+           end
+
+    @past_number << @keypad[@loc.last][@loc.first]
   end
 end
 
